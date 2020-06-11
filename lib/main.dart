@@ -13,44 +13,100 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(),
+      home: StatefulHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class Content {
+ final String text;
+ final String description;
+ final String img;
+ Content(this.text,this.description,this.img);
+}
+
+class StatefulHomePage extends StatefulWidget {
+  @override
+  _StatefulHomePageState createState() => _StatefulHomePageState();
+}
+
+class _StatefulHomePageState extends State<StatefulHomePage> {
+
+  final _formKey = GlobalKey<FormState>();
+
+  String _inputText;
+  String _inputDescript;
+  String _inputImg = "https://www.tcs-mart.com/web/wp-content/uploads/2018/02/sunflower-1627193_960_720-600x600.jpg";
+  List<Content> contents =[];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('My App')
       ),
-      body: MyBody()
+      body: 
+    Column(
+      children: <Widget>[
+        Form(
+          key: _formKey,
+          child: Column(
+            children: <Widget>[
+              TextFormField(
+                decoration: InputDecoration(labelText: "Flower's name"),
+                onSaved: (String value) {
+                  _inputText = value;
+                },
+              ),
+              TextFormField(
+                decoration: InputDecoration(labelText: "Description"),
+                onSaved: (String value) {
+                  _inputDescript = value;
+                },
+              ),
+              RaisedButton(
+                onPressed: (){
+                  _formKey.currentState.save();
+                  setState(() {
+                    contents.insert(0,Content(_inputText,_inputDescript,_inputImg)); //เพราะจะมาอยู่หน้าสุด
+                  });
+                  _formKey.currentState.reset();
+                },
+                child: Text('Add Card'),
+              ),
+            ],  
+          ),
+        ),
+        Expanded(
+          child: contents.length==0 ? Center(child: Text('Empty'),) : 
+                  ListView.builder(
+                    itemCount: contents.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return FlowerCard(
+                        contents[index].text, 
+                        contents[index].description, 
+                        contents[index].img
+                      );
+                    }
+                  ),
+        )
+      ],
+    ),
+
+    
     );
   }
 }
 
-class MyBody extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      children: <Widget>[
-        FlowerCard('Daisy','hey','https://ci.lnwfile.com/j5fe4q.jpg'),
-        FlowerCard('Rose','hey','https://transcode2.app.engoo.com/image/fetch/f_auto,c_lfill,w_800,h_600,dpr_3/https://assets.app.engoo.com/images/mSmbmA5J74lqS1VzMlODggUCwSQtLl69ggFzMDmLRme.jpeg'),
-        FlowerCard('Sunflower','hey','https://www.tcs-mart.com/web/wp-content/uploads/2018/02/sunflower-1627193_960_720-600x600.jpg'),
-      ],
-    );
-  }
-}
 
 class FlowerCard extends StatelessWidget {
 
   final String _text;
   final String _img;
-  final String _content;
+  final String _description;
   
 
-  const FlowerCard(this._text,this._content,this._img,{
+  const FlowerCard(this._text,this._description,this._img,{
     Key key,
   }) : super(key: key);
 
@@ -85,7 +141,7 @@ class FlowerCard extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  '$_content',
+                  '$_description',
                 ),
               ),
             )
